@@ -32,8 +32,8 @@ public class Account {
 	private long balanceMinor;
 
 	/**
-	 * Optimistic lock. Every balance change bumps this, and the update only succeeds if
-	 * nobody else bumped it since we read the row; otherwise the transfer is retried.
+	 * Safety net behind the row locks in {@link AccountRepository#lockAllById}: if any code
+	 * path ever updates a balance without locking first, a lost update fails loudly.
 	 */
 	@Version
 	private long version;
