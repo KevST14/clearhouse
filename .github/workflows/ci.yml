@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ledger:
+    name: Ledger (Java)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ledger
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      # Integration tests start Postgres with Testcontainers; the runner already has Docker.
+      - run: ./mvnw -B verify
