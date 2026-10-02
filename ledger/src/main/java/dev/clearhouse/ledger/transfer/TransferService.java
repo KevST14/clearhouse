@@ -7,6 +7,8 @@ import java.util.UUID;
 import dev.clearhouse.ledger.account.Account;
 import dev.clearhouse.ledger.account.AccountNotFoundException;
 import dev.clearhouse.ledger.account.AccountRepository;
+import dev.clearhouse.ledger.outbox.Outbox;
+import dev.clearhouse.ledger.transfer.TransferEvents.TransferCreated;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -22,13 +24,16 @@ public class TransferService {
 
 	private final LedgerEntryRepository entries;
 
+	private final Outbox outbox;
+
 	private final TransactionTemplate transaction;
 
 	TransferService(AccountRepository accounts, TransferRepository transfers, LedgerEntryRepository entries,
-			PlatformTransactionManager transactionManager) {
+			Outbox outbox, PlatformTransactionManager transactionManager) {
 		this.accounts = accounts;
 		this.transfers = transfers;
 		this.entries = entries;
+		this.outbox = outbox;
 		this.transaction = new TransactionTemplate(transactionManager);
 	}
 
@@ -69,6 +74,8 @@ public class TransferService {
 		Transfer transfer = transfers.save(new Transfer(idempotencyKey, request));
 		entries.save(new LedgerEntry(transfer, from.getId(), -amount));
 		entries.save(new LedgerEntry(transfer, to.getId(), amount));
+		outbox.append(TransferEvents.TOPIC, from.getId().toString(), TransferEvents.TRANSFER_CREATED,
+				transfer.getCreatedAt(), TransferCreated.from(transfer));
 		return new TransferResult(transfer, false);
 	}
 

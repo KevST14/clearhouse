@@ -37,6 +37,23 @@ public final class LedgerInvariants {
 				""").query(String.class).list())
 			.as("currencies where money was created or destroyed")
 			.isEmpty();
+
+		assertThat(jdbc.sql("""
+				select t.id from transfers t
+				left join outbox_events o on o.payload -> 'data' ->> 'transferId' = t.id::text
+				group by t.id
+				having count(o.id) <> 1
+				""").query(UUID.class).list())
+			.as("transfers without exactly one outbox event")
+			.isEmpty();
+
+		assertThat(jdbc.sql("""
+				select o.id from outbox_events o
+				left join transfers t on t.id::text = o.payload -> 'data' ->> 'transferId'
+				where t.id is null
+				""").query(UUID.class).list())
+			.as("outbox events for transfers that were rolled back")
+			.isEmpty();
 	}
 
 }
