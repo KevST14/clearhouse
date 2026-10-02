@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 import dev.clearhouse.ledger.CurrencyCode;
+import dev.clearhouse.ledger.Timestamps;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -47,7 +48,7 @@ public class Account {
 		this.ownerName = ownerName;
 		this.kind = kind;
 		this.currency = currency;
-		this.createdAt = Instant.now();
+		this.createdAt = Timestamps.now();
 	}
 
 	public static Account customer(String ownerName, CurrencyCode currency) {

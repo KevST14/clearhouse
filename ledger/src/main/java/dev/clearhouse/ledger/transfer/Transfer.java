@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 import dev.clearhouse.ledger.CurrencyCode;
+import dev.clearhouse.ledger.Timestamps;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -42,7 +43,7 @@ public class Transfer {
 		this.toAccountId = request.toAccountId();
 		this.amountMinor = request.amountMinor();
 		this.currency = request.currency();
-		this.createdAt = Instant.now();
+		this.createdAt = Timestamps.now();
 	}
 
 	/** Whether a retried request with this transfer's idempotency key asked for the same thing. */
