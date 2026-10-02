@@ -37,7 +37,7 @@ jobs is actually done. It has four parts today:
 | --- | --- | --- |
 | [**Ledger**](#1-the-ledger) | The bank's book of record. Holds every account and moves money between them, following strict accounting rules. | Java, Spring Boot, Postgres |
 | [**Event stream**](#2-events-telling-the-rest-of-the-bank) | A noticeboard where the ledger announces every transfer, so other systems can react. | Redpanda (Kafka-compatible) |
-| [**Traffic generator**](#3-the-traffic-generator) | 120 simulated customers and 22 shops using the bank, plus fraudsters you can unleash. It keeps an "answer key" of which transfers were fraud. | Python, FastAPI |
+| [**Traffic generator**](#3-the-traffic-generator) | 120 simulated customers and 22 shops using the bank, plus fraudsters you can let loose. It keeps an "answer key" of which transfers were fraud. | Python, FastAPI |
 | [**Control room**](#4-the-control-room) | The live dashboard above: watch money move and see what each kind of fraud looks like. | React, TypeScript |
 
 The next two parts are a **data pipeline** that turns the event stream into analysable tables, and an **AI
@@ -202,7 +202,7 @@ real card data. It all goes through the real ledger, so the ledger's rules apply
 **The fraud.** You can launch three attacks at any time. Each one copies the *shape* that real fraud of that
 kind leaves in payment data, because that shape is what detection will have to find:
 
-| Attack | What happens in real life | The shape it leaves |
+| Attack | What happens in real life | The consequences it leaves |
 | --- | --- | --- |
 | **Card testing** | Criminals with stolen card details check which ones work using tiny purchases, then spend big on the ones that do. | A burst of 12–20 purchases under £2 at different shops within seconds, then one large online purchase. A *star* from one account. |
 | **Money mule ring** | Scam victims are talked into sending money to a newly opened account (the "mule"), which quickly passes it on so it's hard to trace. | Several victims pay one brand-new account, which forwards nearly all of it to more new accounts, which cash out. *Fan-in, then fan-out*. |
