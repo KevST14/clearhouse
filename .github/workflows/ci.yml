@@ -30,7 +30,7 @@ jobs:
         working-directory: generator
     steps:
       - uses: actions/checkout@v7
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.2.0
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run pytest
