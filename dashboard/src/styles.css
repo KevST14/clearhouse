@@ -1,0 +1,512 @@
+:root {
+  color-scheme: light;
+  --page: #f9f9f7;
+  --surface: #fcfcfb;
+  --surface-raised: #ffffff;
+  --ink: #0b0b0b;
+  --ink-secondary: #52514e;
+  --ink-muted: #898781;
+  --grid: #e1e0d9;
+  --baseline: #c3c2b7;
+  --border: rgba(11, 11, 11, 0.1);
+  --wash: rgba(11, 11, 11, 0.04);
+  --highlight: rgba(42, 120, 214, 0.12);
+
+  /* What each transfer really was. Everyday traffic stays recessive so fraud stands out;
+     the three fraud hues are validated to stay distinct for colour-blind readers. */
+  --label-normal: #c3c2b7;
+  --label-card-testing: #2a78d6;
+  --label-money-mule: #eb6834;
+  --label-account-takeover: #1baf7a;
+
+  --status-good: #0ca30c;
+  --status-critical: #d03b3b;
+
+  --radius: 12px;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--ink);
+  background: var(--page);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --page: #0d0d0d;
+    --surface: #1a1a19;
+    --surface-raised: #222220;
+    --ink: #ffffff;
+    --ink-secondary: #c3c2b7;
+    --ink-muted: #898781;
+    --grid: #2c2c2a;
+    --baseline: #383835;
+    --border: rgba(255, 255, 255, 0.1);
+    --wash: rgba(255, 255, 255, 0.05);
+    --highlight: rgba(57, 135, 229, 0.18);
+    --label-normal: #52514e;
+    --label-card-testing: #3987e5;
+    --label-money-mule: #d95926;
+    --label-account-takeover: #199e70;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--page);
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+.page {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+  display: grid;
+  gap: 16px;
+}
+
+/* Header */
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.brand p {
+  margin: 2px 0 0;
+  color: var(--ink-secondary);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink-secondary);
+  font-size: 13px;
+}
+
+.pill .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ink-muted);
+}
+
+.pill[data-state="live"] .dot {
+  background: var(--status-good);
+  animation: breathe 2s ease-in-out infinite;
+}
+
+.pill[data-state="offline"] .dot {
+  background: var(--status-critical);
+}
+
+@keyframes breathe {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  cursor: pointer;
+  font-weight: 550;
+  transition:
+    background 120ms ease,
+    transform 120ms ease;
+}
+
+.button:hover {
+  background: var(--wash);
+}
+
+.button:active {
+  transform: scale(0.97);
+}
+
+.button:disabled {
+  opacity: 0.55;
+  cursor: default;
+  transform: none;
+}
+
+.button:focus-visible,
+.rate input:focus-visible {
+  outline: 2px solid var(--label-card-testing);
+  outline-offset: 2px;
+}
+
+.rate {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-secondary);
+  font-size: 13px;
+}
+
+.rate output {
+  min-width: 5.5em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+/* Panels */
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  min-width: 0;
+}
+
+.panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 16px;
+  margin-bottom: 12px;
+}
+
+.panel h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.panel .caption {
+  margin: 2px 0 0;
+  color: var(--ink-secondary);
+  font-size: 13px;
+  max-width: 62ch;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  gap: 16px;
+}
+
+@media (max-width: 960px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Attack launcher */
+
+.scenarios {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.scenario {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  border-top: 3px solid var(--accent);
+}
+
+.scenario h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.scenario p {
+  margin: 0;
+  color: var(--ink-secondary);
+  font-size: 13px;
+  flex: 1;
+}
+
+.scenario footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--ink-muted);
+  font-size: 12px;
+}
+
+.running-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: breathe 1s ease-in-out infinite;
+}
+
+/* Stat tiles */
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.tile {
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.tile .name {
+  color: var(--ink-secondary);
+  font-size: 13px;
+}
+
+.tile .value {
+  margin-top: 2px;
+  font-size: 26px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.tile .note {
+  color: var(--ink-muted);
+  font-size: 12px;
+}
+
+/* Legend */
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ink-secondary);
+  font-size: 12px;
+}
+
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swatch {
+  display: inline-block;
+  width: 12px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--swatch);
+}
+
+/* Money flow */
+
+.flow {
+  position: relative;
+  height: 460px;
+}
+
+.flow canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 2;
+  pointer-events: none;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.tooltip strong {
+  display: block;
+  font-size: 13px;
+}
+
+.tooltip .muted {
+  color: var(--ink-secondary);
+}
+
+.tooltip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Live feed */
+
+.feed {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.feed th {
+  text-align: left;
+  font-weight: 550;
+  color: var(--ink-muted);
+  font-size: 12px;
+  padding: 0 6px 6px;
+  border-bottom: 1px solid var(--grid);
+}
+
+.feed td {
+  padding: 6px;
+  border-bottom: 1px solid var(--grid);
+  vertical-align: top;
+}
+
+/* New rows arrive with a brief highlight. It never hides the row, so a paused or
+   background tab still shows every transfer. */
+.feed tbody tr {
+  animation: arrive 900ms ease-out;
+}
+
+.feed tr.fraud td:first-child {
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.feed .time,
+.feed .amount {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.feed .amount {
+  text-align: right;
+}
+
+.feed .parties {
+  overflow-wrap: anywhere;
+}
+
+.feed .arrow {
+  color: var(--ink-muted);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--ink-secondary);
+}
+
+.chip::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.declined {
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--status-critical);
+  border: 1px solid currentColor;
+}
+
+@keyframes arrive {
+  from {
+    background-color: var(--highlight);
+  }
+}
+
+/* Throughput */
+
+.chart {
+  position: relative;
+}
+
+.chart svg {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+.chart .tick {
+  fill: var(--ink-muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.banner {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--status-critical);
+  color: var(--ink);
+  background: var(--surface);
+}
+
+.footer {
+  color: var(--ink-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
