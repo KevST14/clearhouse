@@ -16,7 +16,7 @@ services:
       timeout: 3s
       retries: 10
 
-  # Kafka-compatible event stream. The ledger starts publishing to it in milestone 1b (outbox).
+  # Kafka-compatible event stream. The ledger publishes transfer events to `ledger.transfers`.
   redpanda:
     image: redpandadata/redpanda:v26.2.3
     command:

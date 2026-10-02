@@ -13,7 +13,7 @@ against labelled fraud.
 flowchart LR
     client[API clients] -->|REST + Idempotency-Key| ledger[Ledger service<br/>Java · Spring Boot]
     ledger --> pg[(Postgres)]
-    ledger -.->|outbox events| rp[[Redpanda]]
+    ledger -->|outbox events| rp[[Redpanda]]
     gen[Traffic generator<br/>with planted fraud] -.-> client
     rp -.-> pipe[Pipeline<br/>Python · dbt]
     pipe -.-> wh[(DuckDB warehouse)]
@@ -47,7 +47,10 @@ curl -s localhost:8080/transfers -H 'Content-Type: application/json' -H 'Idempot
   -d '{"fromAccountId": "00000000-0000-0000-0000-000000000826", "toAccountId": "<alice id>", "amountMinor": 10000, "currency": "GBP"}'
 ```
 
-Run the tests (they start their own Postgres in Docker):
+Every transfer is also published to the `ledger.transfers` topic. Browse it in
+Redpanda Console at http://localhost:8081.
+
+Run the tests (they start their own Postgres and Redpanda in Docker):
 
 ```bash
 cd ledger && ./mvnw verify
@@ -68,6 +71,29 @@ when the key was already used for the same request. Errors are
 [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) `application/problem+json`: `400` for an
 invalid request, `404` for an unknown account, and `422` for insufficient funds, mixed
 currencies, or a key reused for a different transfer.
+
+## Events
+
+Each transfer publishes one message to the `ledger.transfers` topic, keyed by the paying
+account so that account's transfers stay in order on one partition:
+
+```json
+{
+  "eventId": "82f53a98-6db8-41ac-b147-d2642dd54331",
+  "eventType": "transfer.created",
+  "occurredAt": "2026-10-02T16:20:29.303257Z",
+  "data": {
+    "transferId": "8a78060c-299c-48de-ad8d-c3684e1aa2be",
+    "fromAccountId": "00000000-0000-0000-0000-000000000826",
+    "toAccountId": "154a625a-c1c6-45b6-9a8f-876d15c25664",
+    "amountMinor": 5000,
+    "currency": "GBP",
+    "createdAt": "2026-10-02T16:20:29.303257Z"
+  }
+}
+```
+
+Delivery is at-least-once, so consumers should ignore an `eventId` they have already seen.
 
 ## Design notes
 
@@ -94,6 +120,20 @@ reading balances, so concurrent transfers wait their turn and can't deadlock.
 `@Version` stays as a safety net. The tests were also checked against a build with the
 lock removed, where they fail with lost updates and overdrafts.
 
+**Events go through a transactional outbox.** Writing to the database and then sending to
+Kafka can't be done atomically: a crash in between either loses the event or announces a
+transfer that rolled back. Instead, the transfer writes its event into an `outbox_events`
+table in the same transaction, so both commit or neither does. A publisher polls for
+unpublished rows (`FOR UPDATE SKIP LOCKED`), sends them, and marks them published. If it
+dies after sending but before marking, the batch is sent again, which is why delivery is
+at-least-once. After every test, the tests check that each transfer has exactly one event
+and that no event outlived a rolled-back transfer, including when 20 threads race the same
+idempotency key.
+
+**Known limit: one publisher.** `SKIP LOCKED` lets several publishers share the work
+safely, but two of them could then send one account's events out of order. The service
+should run a single publisher until that's handled.
+
 **Known limit: the hot external account.** Every deposit locks the same external
 account, so deposits are serialised. Splitting it into shards is on the roadmap.
 
@@ -103,7 +143,8 @@ account, so deposits are serialised. Splitting it into shards is on the roadmap.
 - [x] Accounts, double-entry transfers, per-account statements
 - [x] Idempotency keys with replay and conflict detection
 - [x] Row locking with concurrency and invariant tests against real Postgres
-- [ ] Transactional outbox publishing `transfer.created` events to Redpanda
+- [x] Transactional outbox publishing `transfer.created` events to Redpanda
+- [ ] Delete published outbox rows after a retention period
 - [ ] OpenAPI docs
 - [ ] Reversals as compensating transfers
 - [ ] Shard the external account to remove the deposit hot spot
@@ -127,7 +168,8 @@ account, so deposits are serialised. Splitting it into shards is on the roadmap.
 compose.yaml          Postgres, Redpanda and Redpanda Console for local runs
 ledger/               Spring Boot service
   src/main/.../account    Accounts and balance rules
-  src/main/.../transfer   Transfers, ledger entries, idempotency
+  src/main/.../transfer   Transfers, ledger entries, idempotency, transfer events
+  src/main/.../outbox     Transactional outbox and Kafka publisher
   src/main/.../web        Error responses
   src/main/resources/db/migration   Flyway schema
 ```
