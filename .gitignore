@@ -3,3 +3,12 @@
 .vscode/
 *.iml
 .env
+
+# Python
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+
+# The generator's local answer-key database
+generator/data/

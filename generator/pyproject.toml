@@ -1,0 +1,32 @@
+[project]
+name = "trafficgen"
+version = "0.1.0"
+description = "Simulated customers, merchants and fraudsters sending transfers to the Clearhouse ledger"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.142",
+    "httpx>=0.28",
+    "uvicorn>=0.37",
+]
+
+[project.scripts]
+trafficgen = "trafficgen.__main__:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4",
+    "ruff>=0.13",
+]
+
+[build-system]
+requires = ["uv_build>=0.11,<0.12"]
+build-backend = "uv_build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
